@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import dotenv from "dotenv";
-
+// testing
 dotenv.config();
 
 if (!process.env.DB_URL) {
