@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node --esm src/types/server.ts"
+    "dev": "node src/server.js"
   },
   "repository": {
     "type": "git",
@@ -20,9 +20,15 @@
   },
   "homepage": "https://github.com/maddogy10/users-api#readme",
   "dependencies": {
+    "@supabase/auth-ui-react": "^0.4.7",
+    "@supabase/auth-ui-shared": "^0.1.8",
+    "@supabase/supabase-js": "^2.81.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.7",
     "express": "^5.1.0",
+    "multer": "^2.0.2",
     "pg": "^8.16.3",
     "postgres": "^3.4.7"
   },
@@ -30,6 +36,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.4",
     "@types/pg": "^8.15.5",
+    "drizzle-kit": "^0.31.6",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
