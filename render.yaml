@@ -2,6 +2,7 @@ services:
   - type: web
     name: sociallink
     env: node
+    startCommand: npm run dev
     envVars:
       - key: SUPABASE_URL
         sync: false
