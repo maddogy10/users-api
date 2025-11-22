@@ -1,14 +1,12 @@
-services:
-  - type: web
-    name: sociallink
-    env: node
-    startCommand: npm run dev
-    envVars:
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_ANON_KEY
-        sync: false
-      - key: SUPABASE_ADMIN_KEY
-        sync: false
-      - key: SUPABASEDB_URL
-        sync: false
+# Exported from Render on 2025-11-22T01:17:56Z
+version: "1"
+databases:
+- name: users-api-disc
+  databaseName: users_api_disc
+  user: users_api_disc_user
+  plan: free
+  region: ohio
+  ipAllowList:
+  - source: 0.0.0.0/0
+    description: everywhere
+  postgresMajorVersion: "17"
