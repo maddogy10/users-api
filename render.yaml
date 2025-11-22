@@ -1,12 +1,13 @@
 services:
-  env: node
-
-envVars:
-- key: SUPABASE_URL
-  sync: false
-- key: SUPABASE_ANON_KEY
-  sync: false
-- key: SUPABASE_ADMIN_KEY
-  sync: false
-- key: SUPABASEDB_URL
-  sync: false
+  - type: web
+    name: sociallink
+    env: node
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_ADMIN_KEY
+        sync: false
+      - key: SUPABASEDB_URL
+        sync: false
