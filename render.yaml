@@ -1,5 +1,4 @@
 services:
-- type: github
   env: node
 
 envVars:
