@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 //import { date } from "drizzle-orm/mysql-core";
 import multer from "multer";
+// install uuid
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 dotenv.config();
