@@ -15,7 +15,7 @@ const PORT = process.env.VITE_API_PORT || 3000;
 //const multer = require("multer");
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://socialink-8842f.web.app"],
     credentials: true,
   })
 );
