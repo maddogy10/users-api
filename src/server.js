@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 //import { date } from "drizzle-orm/mysql-core";
 import multer from "multer";
+import { v4 as uuidv4 } from "uuid";
+import path from "path";
 dotenv.config();
 
 const app = express();
@@ -238,7 +240,7 @@ app.get("/users/:id", async (req, res) => {
 app.put("/users/:id", async (req, res) => {
   const { id } = req.params;
 
-  const {
+  let {
     first_name,
     last_name,
     email,
@@ -247,6 +249,8 @@ app.put("/users/:id", async (req, res) => {
     bio,
     grad_year,
     date_of_birth,
+    instagram,
+    snapchat,
   } = req.body;
   console.log("Recieved body:", req.body);
   grad_year = grad_year ? parseInt(grad_year) : null;
@@ -263,6 +267,8 @@ app.put("/users/:id", async (req, res) => {
       img_url,
       bio,
       grad_year,
+      instagram,
+      snapchat,
     })
     .eq("user_id", id)
     .select("*")
@@ -291,6 +297,7 @@ app.put("/users/:id", async (req, res) => {
 
   return res.status(200).json(fullUser);
 });
+/*
 app.get("/users/:id/uploadavatar", (req, res) => {
   const { id } = req.params;
   const { data: user, error } = supabase
@@ -305,13 +312,12 @@ app.get("/users/:id/uploadavatar", (req, res) => {
     return res.status(404).json({ error: "No avatar found" });
   }
   return res.redirect(user.img_url);
-});
+});*/
 app.post(
   "/users/:id/uploadavatar",
   upload.single("image"),
   async (req, res) => {
     const userId = req.params.id;
-    console.log("req.file:", req.file);
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
@@ -319,45 +325,172 @@ app.post(
     const file = req.file;
     const buffer = req.file.buffer;
     const mimetype = req.file.mimetype;
-
-    const filePath = `avatars/${userId}-${Date.now()}.png`;
+    const ext = path.extname(file.originalname);
+    const filePath = `${userId}/avatars/${uuidv4()}${ext}`;
 
     latestImageBuffer = buffer;
     latestImageType = mimetype;
+
     const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
       .from("useravatars")
       .upload(filePath, buffer, {
         contentType: mimetype,
-        upsert: true,
       });
 
     if (uploadError) {
       console.error("Supabase upload error:", uploadError);
       return res.status(500).json({ error: uploadError.message });
     }
-    const { data: signedData } = supabaseAdmin.storage
-      .from("useravatars")
-      .createSignedUrl(filePath, 60 * 60); // 1 hour expiry
-    if (signedError) {
-      console.error("Signed URL error:", signedError);
-      return res.status(500).json({ error: signedError.message });
+
+    const { data: publicUrlData, error: publicUrlError } =
+      await supabaseAdmin.storage.from("useravatars").getPublicUrl(filePath);
+
+    if (publicUrlError) {
+      console.error("Supabase public URL error:", publicUrlError);
+      return res.status(500).json({ error: publicUrlError.message });
     }
 
-    const signedUrl = signedData.signedUrl;
+    const img_url = publicUrlData.publicUrl;
 
-    const { error: dbError } = await supabaseAdmin
+    const { data: updatedUser, error: updateError } = await supabase
       .from("users")
-      .update({ img_url: signedUrl })
-      .eq("user_id", userId);
-    if (dbError) {
-      console.error("Database update error:", dbError);
-      return res.status(500).json({ error: dbError.message });
+      .update({ img_url })
+      .eq("user_id", userId)
+      .select("*")
+      .single();
+
+    if (updateError) {
+      console.error("User update error:", updateError);
+      return res.status(500).json({ error: updateError.message });
     }
-    res
-      .status(200)
-      .json({ message: "File uploaded successfully", url: signedUrl });
+
+    return res.status(200).json({
+      message: "File uploaded successfully",
+      data: uploadData,
+      avatar_url: img_url,
+    });
   }
 );
+
+app.get("/users/:id/avatar", async (req, res) => {
+  const { id } = req.params;
+  const { data, error } = await supabaseAdmin.storage
+    .from("useravatars")
+    .list(`${id}/avatars/`, {
+      sortBy: {
+        column: "created_at",
+        order: "desc",
+      },
+    });
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  res.status(200).json(data);
+});
+
+app.get("/user/getotheruser/:id", async (req, res) => {
+  const userId = req.params.id;
+  const { data, error } = await supabase
+    .from("users")
+    .select(`*, user_profiles (*)`)
+    .eq("user_id", userId)
+    .single();
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  res.status(200).json(data);
+});
+
+app.post("/user/updatesavedposts/:id", async (req, res) => {
+  const userId = req.params.id;
+  const postId = req.body.postId;
+  console.log("Post ID to add:", postId);
+  const { data: savedPosts, error: savedPostsError } = await supabase
+    .from("users")
+    .select("saved_profiles")
+    .eq("user_id", userId)
+    .single();
+  console.log("Saved posts:", savedPosts);
+  if (savedPostsError) {
+    return res.status(500).json({ error: savedPostsError.message });
+  }
+  const updatedPosts = [...(savedPosts.saved_profiles || []), postId];
+  console.log("Updated posts:", updatedPosts);
+
+  const { data: allUpdated, error: allUpdatedError } = await supabase
+    .from("users")
+    .update({ saved_profiles: updatedPosts })
+    .eq("user_id", userId)
+    .single();
+  if (allUpdatedError) {
+    return res.status(500).json({ error: allUpdatedError.message });
+  }
+  console.log("All updated user data:", allUpdated);
+  res.status(200).json(allUpdated);
+  /*const { data: allUpdated, error: allUpdatedError } = await supabase
+    .from("users")
+    .arrayAppend("saved_posts", [postId])
+    .eq("user_id", userId)
+    .single();
+  if (allUpdatedError) {
+    return res.status(500).json({ error: error.message });
+  }
+  res.status(200).json(allUpdated);*/
+});
+app.post("/user/removesavedposts/:id", async (req, res) => {
+  const userId = req.params.id;
+  const postId = req.body.postId;
+  const { data: savedPosts, error: savedPostsError } = await supabase
+    .from("users")
+    .select("saved_profiles")
+    .eq("user_id", userId)
+    .single();
+  if (savedPostsError) {
+    return res.status(500).json({ error: savedPostsError.message });
+  }
+
+  const updatedPosts = (savedPosts.saved_profiles || []).filter(
+    (id) => id !== postId
+  );
+  console.log("Updated posts after removal:", updatedPosts);
+
+  const { data: allUpdated, error: allUpdatedError } = await supabase
+    .from("users")
+    .update({ saved_profiles: updatedPosts })
+    .eq("user_id", userId)
+    .single();
+  if (allUpdatedError) {
+    return res.status(500).json({ error: allUpdatedError.message });
+  }
+  res.status(200).json(allUpdated);
+});
+
+app.get("/user/savedprofiles/:id", async (req, res) => {
+  const userId = req.params.id;
+  const { data, error } = await supabase
+    .from("users")
+    .select("saved_profiles")
+    .eq("user_id", userId)
+    .single();
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  console.log("Saved posts data:", data);
+  res.status(200).json(data);
+});
+app.post("/users/savedprofilespages", async (req, res) => {
+  const postIds = req.body.postIds;
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .in("user_id", [...postIds]);
+  console.log(postIds);
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  res.status(200).json(data);
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
