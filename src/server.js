@@ -132,12 +132,12 @@ app.post("/signup", async (req, res) => {
   // Set cookies BEFORE sending response
   res.cookie("my-access-token", authData.session.access_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     sameSite: "none",
   });
   res.cookie("my-refresh-token", authData.session.refresh_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     sameSite: "none",
   });
 
@@ -157,12 +157,12 @@ app.post("/login", async (req, res) => {
   // Set cookies BEFORE sending response
   res.cookie("my-access-token", data.session.access_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     sameSite: "none",
   });
   res.cookie("my-refresh-token", data.session.refresh_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     sameSite: "none",
   });
 
@@ -174,8 +174,16 @@ app.post("/logout", async (req, res) => {
   if (refreshToken) {
     await supabaseAdmin.auth.signOut();
   }
-  res.clearCookie("my-access-token");
-  res.clearCookie("my-refresh-token");
+  res.clearCookie("my-access-token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  res.clearCookie("my-refresh-token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
   res.status(200).json({ message: "Logged out successfully" });
 });
 
@@ -205,12 +213,12 @@ app.get("/users/me", async (req, res) => {
       }
       res.cookie("my-access-token", refreshData.session.access_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "none",
       });
       res.cookie("my-refresh-token", refreshData.session.refresh_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "none",
       });
       return res.status(200).json(refreshData.user);
