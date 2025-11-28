@@ -15,7 +15,7 @@ const PORT = process.env.VITE_API_PORT || 3000;
 //const multer = require("multer");
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://socialink-8842f.web.app"],
+    origin: ["https://socialink-8842f.web.app"],
     credentials: true,
   })
 );
@@ -133,12 +133,12 @@ app.post("/signup", async (req, res) => {
   res.cookie("my-access-token", authData.session.access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "none",
   });
   res.cookie("my-refresh-token", authData.session.refresh_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "none",
   });
 
   res.status(200).json(authData);
@@ -158,12 +158,12 @@ app.post("/login", async (req, res) => {
   res.cookie("my-access-token", data.session.access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "none",
   });
   res.cookie("my-refresh-token", data.session.refresh_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "none",
   });
 
   // Send response only once with user data (not tokens)
