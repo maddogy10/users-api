@@ -170,6 +170,7 @@ app.post("/login", async (req, res) => {
   res.status(200).json({ user: data.user });
 });
 app.post("/logout", async (req, res) => {
+  const refreshToken = req.cookies["my-refresh-token"];
   if (refreshToken) {
     await supabaseAdmin.auth.signOut();
   }
