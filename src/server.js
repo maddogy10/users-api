@@ -202,12 +202,12 @@ app.get("/users/me", async (req, res) => {
       res.cookie("my-access-token", refreshData.session.access_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
       });
       res.cookie("my-refresh-token", refreshData.session.refresh_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "none",
       });
       return res.status(200).json(refreshData.user);
     } catch (e) {
