@@ -287,7 +287,7 @@ app.put("/users/:id", async (req, res) => {
   console.log("Recieved body:", req.body);
   // if not provided, set to null
   grad_year = grad_year ? parseInt(grad_year) : null;
-  date_of_birth = date_of_birth || null;
+  //date_of_birth = date_of_birth || null;
   img_url = img_url || null;
 
   const { data: updatedUser, error: updatedError } = await supabase
