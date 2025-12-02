@@ -281,7 +281,6 @@ app.put("/users/:id", async (req, res) => {
     img_url,
     bio,
     grad_year,
-    date_of_birth,
     instagram,
     snapchat,
   } = req.body;
@@ -303,10 +302,12 @@ app.put("/users/:id", async (req, res) => {
       grad_year,
       instagram,
       snapchat,
+      user_profiles,
     })
     .eq("user_id", id)
     .select("*")
     .single();
+  let date_of_birth = user_profiles?.date_of_birth || null;
   if (updatedError) {
     return res.status(500).json({ error: updatedError.message });
   }
