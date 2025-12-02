@@ -283,12 +283,14 @@ app.put("/users/:id", async (req, res) => {
     grad_year,
     instagram,
     snapchat,
+    user_profiles,
   } = req.body;
   console.log("Recieved body:", req.body);
   // if not provided, set to null
   grad_year = grad_year ? parseInt(grad_year) : null;
   //date_of_birth = date_of_birth || null;
   img_url = img_url || null;
+  let date_of_birth = user_profiles?.date_of_birth || null;
 
   const { data: updatedUser, error: updatedError } = await supabase
     .from("users")
@@ -302,12 +304,10 @@ app.put("/users/:id", async (req, res) => {
       grad_year,
       instagram,
       snapchat,
-      user_profiles,
     })
     .eq("user_id", id)
     .select("*")
     .single();
-  let date_of_birth = user_profiles?.date_of_birth || null;
   if (updatedError) {
     return res.status(500).json({ error: updatedError.message });
   }
