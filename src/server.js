@@ -266,6 +266,7 @@ app.get("/users/:id", async (req, res) => {
   if (error) {
     return res.status(500).json({ error: error.message });
   }
+  console.log(data);
   res.status(200).json(data);
 });
 // update user information by id
